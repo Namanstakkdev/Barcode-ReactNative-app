@@ -2,7 +2,7 @@ const express = require("express");
 const Log = require("./models/Log");
 const app = express();
 
-app.post("/addlogs", async (request, response) => {
+app.post("/", async (request, response) => {
   const user = new Log(request.body);
 
   try {
@@ -13,7 +13,7 @@ app.post("/addlogs", async (request, response) => {
   }
 });
 
-app.get("/getlogs", async (request, response) => {
+app.get("/", async (request, response) => {
   const logs = await Log.find({});
 
   try {

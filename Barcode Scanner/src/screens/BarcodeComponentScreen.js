@@ -4,28 +4,65 @@ import { FlatList } from "react-native-gesture-handler";
 import { BarCodeScanner } from "expo-barcode-scanner";
 import axios from "axios";
 import config from "../../config/config.json";
-import data from "../../config/data.json";
 
 const BarcodeComponentScreen = () => {
   const [hasPermission, setHasPermission] = useState(null);
   const [scanned, setScanned] = useState(false);
   const [text, setText] = useState("Not Yet Scanned");
+  const [fetchdata, setFetchdata] = useState("");
 
   const postDataToServer = ({ type, data }) => {
     if (!{ type, data }) {
       console.log("Arguments are must for POST requests");
     } else {
+      console.log(`Type-${type}, Data-${data}`);
       axios
-        .post(config.URL_ADDRESS, {
-          type: `${type}`,
-          data: `${data}`,
-        })
+        .post(
+          config.URL_ADDRESS,
+          {
+            type: `${type}`,
+            data: `${data}`,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        )
         .then((response) =>
           console.log(`Inserted ${JSON.stringify(response.data)}`)
         )
-        .catch((err) => console.log(err));
+        .catch((error) => {
+          if (error.response) {
+            console.log("error.response.data---->");
+            console.log(error.response.data);
+            console.log("error.response.status---->");
+            console.log(error.response.status);
+            console.log("error.response.headers---->");
+            console.log(error.response.headers);
+          } else if (error.request) {
+            console.log("error.request---->");
+            console.log(error.request);
+          } else {
+            console.log("Error", error.message);
+          }
+        });
     }
   };
+
+  const getDataToServer = () => {
+    axios
+      .get(config.URL_ADDRESS)
+      .then((response) => {
+        const APIdata = response.data;
+        setFetchdata(APIdata);
+      })
+      .catch((err) => console.log(err));
+  };
+
+  useEffect(() => {
+    getDataToServer();
+  }, []);
 
   const askForCameraPermission = () => {
     (async () => {
@@ -85,8 +122,7 @@ const BarcodeComponentScreen = () => {
 
       <Text>This is the Data in Database</Text>
       <FlatList
-        horizontal
-        data={data}
+        data={fetchdata}
         keyExtractor={(data) => data.id}
         renderItem={({ item }) => {
           return (
